@@ -114,8 +114,8 @@ PMID_PMCID <- subset(PMID_PMCID, !(id %in% items_under_embargo$ID), select=id:pm
 PMID_PMCID$ProviderID <- "YourID"
 PMID_PMCID$Database <- "PubMed"
 PMID_PMCID$IconURL <- "IconURL"
-PMID_PMCID$UrlName <- "Full Text at the institutional repository"
-PMID_PMCID$SubjectType <- "institutional repository"
+PMID_PMCID$UrlName <- "Full Text from"
+PMID_PMCID$SubjectType <- " "
 PMID_PMCID$Attribute <- "Full-text PDF"
 
 PMID_PMCID <- subset(PMID_PMCID, select=c(ProviderID, Database, pmid, handle, IconURL, UrlName, SubjectType, Attribute))
