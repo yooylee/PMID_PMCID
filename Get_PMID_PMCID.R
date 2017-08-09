@@ -118,12 +118,12 @@ PMID_PMCID$UrlName <- "Full Text from"
 PMID_PMCID$SubjectType <- " "
 PMID_PMCID$Attribute <- "Full-text PDF"
 
-PMID_PMCID <- subset(PMID_PMCID, select=c(ProviderID, Database, pmid, handle, IconURL, UrlName, SubjectType, Attribute))
+final <- subset(PMID_PMCID, select=c(ProviderID, Database, pmid, handle, IconURL, UrlName, SubjectType, Attribute))
 colnames(final) <- c("ProviderID", "Database", "UID", "URL", "IconURL", "UrlName", "SubjectType", "Attribute")
 
 # 16: Save the file in the csv format
 
-write.table(PMID_PMCID, file="PMID_PMCID.csv", sep=",", row.names=F)
+write.table(final, file="PMID_PMCID.csv", sep=",", row.names=F)
 
 # 17: Identify items under embargo but released soon
 items_under_embargo_from_PMID_PMCID <- subset(PMID_PMCID, (id %in% items_under_embargo$ID), select=id:pmcid)
