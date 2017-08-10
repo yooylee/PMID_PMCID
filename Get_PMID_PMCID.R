@@ -23,7 +23,7 @@ myPubmedID <- function(x) {
   if(length(Pubmed_ID) == 1 ) {
     PMID <- Pubmed_ID
   } else {
-    PMID <- NULL
+    PMID <- "None"
   }
   
   return(PMID)
@@ -31,31 +31,26 @@ myPubmedID <- function(x) {
 
 # 6. Get Pubmed ID
 
-for (i in 1:nrow(PMID_PMCID)) {
-  
-  if (is.null(myPubmedID(as.character(PMID_PMCID$doi[i])))) {
-    PMID_PMCID$pmid[i] <- "NULL"
-  } else {
-    PMID_PMCID$pmid[i] <- myPubmedID(as.character(PMID_PMCID$doi[i]))
-  }
-  
-}
+PMID_list <- lapply(PMID_PMCID$doi, myPubmedID)
+PMID_list <- unlist(PMID_list)
+PMID_PMCID$pmid <- PMID_list
+
 
 ## 7: Issue & Solution from Step 6.
 ### Issue: The function of myPubmedID returns one Pubmed ID, but associated one. 
-### Solution: Identify duplicated ID values and remove NULL value
+### Solution: Identify duplicated ID values and remove None value
 
 duplicated_IDs <- data.frame(PMID_PMCID$pmid[duplicated(PMID_PMCID$pmid)])
 # This returns n-1
 colnames(duplicated_IDs) <- c("value")
 # Change the column name
-duplicated_IDs <- subset(duplicated_IDs, value != 'NULL')
-# Remove NULL value
+duplicated_IDs <- subset(duplicated_IDs, value != 'None')
+# Remove None value
 duplicated_IDs <- data.frame(count(duplicated_IDs))
 
 ## 7-1: If the freq is more than 1,
 
-PMID_PMCID <- within(PMID_PMCID, pmid[pmid==23104645] <- c("NULL"))
+PMID_PMCID <- within(PMID_PMCID, pmid[pmid==23104645] <- c("None"))
 # Repeat this process 
 
 ## 7-2: If the freq is equal to 1, check manually. Sometimes, they are correct PMID. 
@@ -64,41 +59,34 @@ PMID_PMCID <- within(PMID_PMCID, pmid[pmid==23104645] <- c("NULL"))
 # 8: Function to get Pubmed Central ID
 
 myPMCID <- function(x) {
-  taxize_summ <- entrez_summary(db="pubmed", id=x)
-  PMC <- data.frame(taxize_summ$articleids)
-  
-  PMC_ID <- grep("pmc-id:", PMC$value, value=TRUE)
-  
-  if (identical(PMC_ID, character(0))) {
-    PMCID <- NULL
+  if (x == "None") {
+    PMCID <- "None"
   } else {
-    PMCID <- PMC_ID
+    taxize_summ <- entrez_summary(db="pubmed", id=x)
+    PMC <- data.frame(taxize_summ$articleids)
+    
+    PMC_ID <- grep("pmc-id:", PMC$value, value=TRUE)
+    
+    if (identical(PMC_ID, character(0))) {
+      PMCID <- "None"
+    } else {
+      PMCID <- PMC_ID
+    }
   }
-  
   return(PMCID)
 }
 
 # 9: Get Pubmed Central ID
 
-for (i in 1:nrow(PMID_PMCID)) {
-  if (PMID_PMCID$pmid[i] == "NULL") {
-    PMID_PMCID$pmcid[i] <- "NULL"
-  } else {
-    if (is.null(myPMCID(PMID_PMCID$pmid[i]))) {
-      PMID_PMCID$pmcid[i] <- "NULL"
-    } else {
-      PMID_PMCID$pmcid[i] <- myPMCID(PMID_PMCID$pmid[i])
-    }  
-  }
-}
+PMCID_list <- lapply(PMID_PMCID$pmid, myPMCID)
+PMCID_list<- unlist(PMCID_list)
+PMID_PMCID$pmcid <- PMCID_list
 
+# 10: Delete all rows with PMID value None
+PMID_PMCID <- PMID_PMCID[ which(PMID_PMCID$pmid != "None"), ]
 
-
-# 10: Delete all rows with PMID value NULL
-PMID_PMCID <- PMID_PMCID[ which(PMID_PMCID$pmid != "NULL"), ]
-
-# 11: Delete all rows with PMCID value not NULL
-PMID_PMCID <- PMID_PMCID[ which(PMID_PMCID$pmcid=="NULL"), ]
+# 11: Delete all rows with PMCID value not None
+PMID_PMCID <- PMID_PMCID[ which(PMID_PMCID$pmcid=="None"), ]
 
 # 12:  Load csv file of items under embargo and create a data frame
 Embargo <- read.csv("FileName.csv", header=TRUE)
